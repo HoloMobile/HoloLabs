@@ -19,7 +19,7 @@
             --card-bg: rgba(30, 41, 59, 0.4);
             --text: #f8fafc;
             --text-muted: #94a3b8;
-            --danger: #ef4444; /* Neue Farbe für Warnungen/Regeln */
+            --danger: #ef4444;
         }
         * {
             margin: 0;
@@ -252,7 +252,6 @@
             color: var(--text-muted);
             font-size: 1rem;
         }
-        /* NEU: Bereich für Regeln und Sicherheit */
         .rules {
             padding: 100px 10%;
             background: #050a16;
@@ -336,7 +335,7 @@
             <nav>
                 <a href="#features">Vorteile</a>
                 <a href="#download">Zugang</a>
-                <a href="#rules">Regeln</a> <!-- Menüpunkt hinzugefügt -->
+                <a href="#rules">Regeln</a>
                 <a href="https://discord.me/hololabs" target="_blank" class="btn discord-btn" style="padding: 8px 20px; font-size: 0.9rem;">Discord</a>
             </nav>
         </header>
@@ -382,7 +381,6 @@
             </div>
         </section>
 
-        <!-- NEU: Nutzungs- & Sicherheitsrichtlinien -->
         <section class="rules" id="rules">
             <h2>Nutzungs- & Sicherheitsrichtlinien</h2>
             <p class="rules-desc">Um die Sicherheit und Integrität unserer Plattform zu gewährleisten, gelten folgende Grundregeln:</p>
@@ -399,13 +397,13 @@
             </div>
         </section>
 
-<footer>
-    <p>&copy; 2026 HoloLabs. Alle Rechte vorbehalten.</p>
-    <p>
-        <a href="datenschutz.html" style="color: var(--text-muted); text-decoration: underline; margin-right: 15px;">Datenschutzerklärung</a>
-        <a href="impressum.html" style="color: var(--text-muted); text-decoration: underline;">Impressum</a>
-    </p>
-</footer>
+        <footer>
+            <p>&copy; 2026 HoloLabs. Alle Rechte vorbehalten.</p>
+            <p>
+                <a href="datenschutz.html" style="color: var(--text-muted); text-decoration: underline; margin-right: 15px;">Datenschutzerklärung</a>
+                <a href="impressum.html" style="color: var(--text-muted); text-decoration: underline;">Impressum</a>
+            </p>
+        </footer>
     </div>
 
     <script>
@@ -416,9 +414,34 @@
         async function loginUser() {
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
-            const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
-            if (error) alert('Login fehlgeschlagen: ' + error.message);
-            else showWebsite();
+            
+            const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+            
+            if (error) {
+                alert('Login fehlgeschlagen: ' + error.message);
+                return;
+            }
+            
+            // Nach erfolgreichem Login prüfen wir die Rolle des Users
+            const user = data.user;
+            if (user) {
+                const { data: profile, error: profileError } = await supabaseClient
+                    .from('profiles')
+                    .select('role')
+                    .eq('id', user.id)
+                    .single();
+                
+                if (profileError || !profile) {
+                    // Standard-User ohne Admin/Dev-Rolle sieht die normale Website
+                    showWebsite();
+                } else if (profile.role === 'admin') {
+                    window.location.href = 'admin.html';
+                } else if (profile.role === 'developer') {
+                    window.location.href = 'developer.html';
+                } else {
+                    showWebsite();
+                }
+            }
         }
         
         async function registerUser() {
