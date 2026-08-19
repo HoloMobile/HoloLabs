@@ -179,7 +179,7 @@
                 .eq('id', session.user.id)
                 .single();
 
-            if (error || !profile || (profile.role !== 'developer' && profile.role !== 'developer')) {
+            if (error || !profile || profile.role !== 'developer') {
                 alert('Zugriff verweigert! Nur für Entwickler.');
                 window.location.href = 'index.html';
             } else {
@@ -212,8 +212,6 @@
 
         function saveCode() {
             const fileName = document.getElementById('file-select').value;
-            // Da reine Webhosting-Dienste im Frontend keine echten Dateien auf dem Server überschreiben können,
-            // wird der Code hier lokal verarbeitet und protokolliert.
             logToConsole(`[ERFOLG] Code für ${fileName} erfolgreich im Editor kompiliert und zwischengespeichert.`);
             alert(`Der Code für ${fileName} wurde zwischengespeichert! (Hinweis: Zum permanenten Live-Schalten bitte den Code in deine GitHub-Repository Datei einfügen).`);
         }
