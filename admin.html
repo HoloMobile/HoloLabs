@@ -1,1 +1,57 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HoloLabs | Admin-Panel</title>
+    <!-- Supabase Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { background: #030712; color: #f8fafc; font-family: sans-serif; padding: 50px; text-align: center; }
+        .card { background: rgba(30, 41, 59, 0.4); padding: 30px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.08); max-width: 600px; margin: 0 auto; }
+        .btn { background: #ef4444; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>Admin-Bereich</h1>
+        <p>Willkommen im geschützten Administrator-Bereich von HoloLabs.</p>
+        <!-- Hier kommen deine Admin-Funktionen hin -->
+        <button class="btn" onclick="logout()">Ausloggen</button>
+    </div>
 
+    <script>
+        const SUPABASE_URL = 'https://jhwlyuiughhvtopxplqe.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_Y6jlvYWTamP40tID3SUV-A_pUyc2qLv'; 
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        async function checkAdminAccess() {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            
+            if (!session) {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            const { data: profile } = await supabaseClient
+                .from('profiles')
+                .select('role')
+                .eq('id', session.user.id)
+                .single();
+
+            if (!profile || profile.role !== 'admin') {
+                alert('Zugriff verweigert!');
+                window.location.href = 'index.html';
+            }
+        }
+
+        async function logout() {
+            await supabaseClient.auth.signOut();
+            window.location.href = 'index.html';
+        }
+
+        // Bei Laden der Seite sofort prüfen
+        checkAdminAccess();
+    </script>
+</body>
+</html>
