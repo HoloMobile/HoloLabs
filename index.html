@@ -332,7 +332,7 @@
     <div class="ambient-glow"></div>
     <div id="login-screen">
         <div class="login-card">
-            <h2>HoloMobile <span style="color:var(--secondary)">Zugang</span></h2>
+            <h2>HoloLabs <span style="color:var(--secondary)">Zugang</span></h2>
             <input type="email" id="email" class="login-input" placeholder="E-Mail-Adresse eingeben">
             <input type="password" id="password" class="login-input" placeholder="Passwort eingeben">
             <div style="display: flex; gap: 10px; margin-top: 10px;">
@@ -453,9 +453,9 @@
             if (profileError || !profile) {
                 showWebsite();
             } else if (profile.role === 'admin') {
-                window.location.href = 'admin.html';
+                window.location.href = 'index.html';
             } else if (profile.role === 'developer') {
-                window.location.href = 'developer.html';
+                window.location.href = 'index.html';
             } else {
                 showWebsite();
             }
