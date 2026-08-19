@@ -4,20 +4,132 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HoloLabs | Admin-Panel</title>
-    <!-- Supabase Client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body { background: #030712; color: #f8fafc; font-family: sans-serif; padding: 50px; text-align: center; }
-        .card { background: rgba(30, 41, 59, 0.4); padding: 30px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.08); max-width: 600px; margin: 0 auto; }
-        .btn { background: #ef4444; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; margin-top: 20px; }
+        :root {
+            --bg: #030712;
+            --card-bg: rgba(30, 41, 59, 0.4);
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+            --danger: #ef4444;
+            --success: #10b981;
+            --primary: #007bff;
+            --secondary: #00d2ff;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+        }
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 40px;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            padding-bottom: 20px;
+        }
+        .logo {
+            font-size: 24px;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .card {
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            margin-bottom: 20px;
+        }
+        .card h2 {
+            color: var(--secondary);
+            margin-bottom: 10px;
+            font-size: 1.5rem;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        th, td {
+            text-align: left;
+            padding: 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        th {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+        .btn {
+            padding: 6px 14px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: 0.3s;
+        }
+        .btn:hover {
+            opacity: 0.9;
+        }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-success { background: var(--success); color: white; }
+        .btn-nav {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            margin-right: 10px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        .btn-nav:hover {
+            background: rgba(255,255,255,0.2);
+        }
     </style>
 </head>
 <body>
-    <div class="card">
-        <h1>Admin-Bereich</h1>
-        <p>Willkommen im geschützten Administrator-Bereich von HoloLabs.</p>
-        <!-- Hier kommen deine Admin-Funktionen hin -->
-        <button class="btn" onclick="logout()">Ausloggen</button>
+    <div class="container">
+        <header>
+            <div class="logo">HoloLabs // Admin-Panel</div>
+            <div>
+                <a href="index.html?bypass=true" class="btn-nav">Zur Startseite</a>
+                <button class="btn btn-danger" onclick="logout()">Ausloggen</button>
+            </div>
+        </header>
+
+        <div class="card">
+            <h2>Registrierte Benutzer</h2>
+            <p style="color: var(--text-muted); margin-bottom: 15px;">Übersicht aller Accounts und Verwaltung des Zugriffs.</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>User-ID</th>
+                        <th>Rolle</th>
+                        <th>Status</th>
+                        <th>Aktion</th>
+                    </tr>
+                </thead>
+                <tbody id="user-list">
+                    <tr><td colspan="4" style="text-align: center; color: var(--text-muted);">Lade Benutzer...</td></tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <script>
@@ -27,21 +139,68 @@
 
         async function checkAdminAccess() {
             const { data: { session } } = await supabaseClient.auth.getSession();
-            
             if (!session) {
                 window.location.href = 'index.html';
                 return;
             }
 
-            const { data: profile } = await supabaseClient
+            const { data: profile, error } = await supabaseClient
                 .from('profiles')
                 .select('role')
                 .eq('id', session.user.id)
                 .single();
 
-            if (!profile || profile.role !== 'admin') {
-                alert('Zugriff verweigert!');
+            if (error || !profile || profile.role !== 'admin') {
+                alert('Zugriff verweigert! Nur für Administratoren.');
                 window.location.href = 'index.html';
+            } else {
+                loadUsers();
+            }
+        }
+
+        async function loadUsers() {
+            const { data, error } = await supabaseClient.from('profiles').select('*');
+            if (error) {
+                console.error('Fehler beim Laden:', error);
+                return;
+            }
+
+            const tbody = document.getElementById('user-list');
+            tbody.innerHTML = '';
+
+            if (!data || data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align: center;">Keine Benutzer gefunden.</td></tr>';
+                return;
+            }
+
+            data.forEach(user => {
+                const tr = document.createElement('tr');
+                const isBanned = user.banned === true;
+                
+                tr.innerHTML = `
+                    <td style="font-family: monospace; font-size: 0.85rem;">${user.id}</td>
+                    <td>${user.role || 'user'}</td>
+                    <td><span style="color: ${isBanned ? 'var(--danger)' : 'var(--success)'}; font-weight: bold;">${isBanned ? 'Gesperrt' : 'Aktiv'}</span></td>
+                    <td>
+                        <button class="btn ${isBanned ? 'btn-success' : 'btn-danger'}" onclick="toggleBan('${user.id}', ${!isBanned})">
+                            ${isBanned ? 'Entsperren' : 'Bannen'}
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        async function toggleBan(userId, banStatus) {
+            const { error } = await supabaseClient
+                .from('profiles')
+                .update({ banned: banStatus })
+                .eq('id', userId);
+
+            if (error) {
+                alert('Fehler beim Aktualisieren: ' + error.message);
+            } else {
+                loadUsers();
             }
         }
 
@@ -50,7 +209,6 @@
             window.location.href = 'index.html';
         }
 
-        // Bei Laden der Seite sofort prüfen
         checkAdminAccess();
     </script>
 </body>
