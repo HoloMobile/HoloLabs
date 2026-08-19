@@ -163,6 +163,19 @@
         .discord-btn:hover {
             box-shadow: 0 8px 30px rgba(88, 101, 242, 0.5) !important;
         }
+        .logout-btn {
+            background: rgba(239, 68, 68, 0.15) !important;
+            color: var(--danger) !important;
+            border: 1px solid rgba(239, 68, 68, 0.3) !important;
+            box-shadow: none !important;
+            padding: 8px 20px !important;
+            font-size: 0.9rem !important;
+        }
+        .logout-btn:hover {
+            background: var(--danger) !important;
+            color: white !important;
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4) !important;
+        }
         .hero {
             min-height: 100vh;
             display: flex;
@@ -337,6 +350,7 @@
                 <a href="#download">Zugang</a>
                 <a href="#rules">Regeln</a>
                 <a href="https://discord.me/hololabs" target="_blank" class="btn discord-btn" style="padding: 8px 20px; font-size: 0.9rem;">Discord</a>
+                <button class="btn logout-btn" onclick="logoutUser()">Ausloggen</button>
             </nav>
         </header>
 
@@ -453,7 +467,7 @@
             if (session) {
                 await checkRoleAndRedirect(session.user.id);
             } else {
-                showWebsite();
+                // Keine Session vorhanden -> Login-Bildschirm sichtbar lassen (nichts tun, da er standardmäßig da ist)
             }
         }
 
@@ -483,6 +497,17 @@
             const { error } = await supabaseClient.auth.signUp({ email, password });
             if (error) alert('Registrierung fehlgeschlagen: ' + error.message);
             else alert('Registrierung erfolgreich! Du kannst dich jetzt einloggen.');
+        }
+
+        // 4. Ausloggen-Funktion
+        async function logoutUser() {
+            const { error } = await supabaseClient.auth.signOut();
+            if (error) {
+                alert('Fehler beim Ausloggen: ' + error.message);
+                return;
+            }
+            // Seite neu laden, wodurch die Session weg ist und der Login-Screen erscheint
+            window.location.href = 'index.html';
         }
         
         function showWebsite() {
