@@ -20,6 +20,7 @@
             --text: #f8fafc;
             --text-muted: #94a3b8;
             --danger: #ef4444;
+            --warning: #f59e0b;
         }
         * {
             margin: 0;
@@ -126,7 +127,7 @@
         nav {
             display: flex;
             align-items: center;
-            gap: 25px;
+            gap: 20px;
         }
         nav a {
             color: var(--text-muted);
@@ -349,6 +350,11 @@
                 <a href="#features">Vorteile</a>
                 <a href="#download">Zugang</a>
                 <a href="#rules">Regeln</a>
+                
+                <!-- Rollen-basierte Buttons (Standardmäßig versteckt) -->
+                <a href="admin.html" id="admin-btn" class="btn" style="display: none; padding: 8px 16px; font-size: 0.9rem; background: var(--danger) !important; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);">Admin Panel</a>
+                <a href="developer.html" id="dev-btn" class="btn" style="display: none; padding: 8px 16px; font-size: 0.9rem; background: var(--warning) !important; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);">Dev Panel</a>
+
                 <a href="https://discord.me/hololabs" target="_blank" class="btn discord-btn" style="padding: 8px 20px; font-size: 0.9rem;">Discord</a>
                 <button class="btn logout-btn" onclick="logoutUser()">Ausloggen</button>
             </nav>
@@ -425,17 +431,15 @@
         const SUPABASE_ANON_KEY = 'sb_publishable_Y6jlvYWTamP40tID3SUV-A_pUyc2qLv'; 
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         
-        // 1. URL-Parameter prüfen (z. B. index.html?bypass=true)
+        // URL-Parameter prüfen (z. B. index.html?bypass=true)
         const urlParams = new URLSearchParams(window.location.search);
         const bypassRedirect = urlParams.get('bypass') === 'true';
 
-        // 2. Zentrale Funktion für Weiterleitung oder Website-Anzeige
-        async function checkRoleAndRedirect(userId) {
-            // Wenn der Bypass aktiv ist, stoppen wir jeden Redirect und zeigen direkt die Startseite
-            if (bypassRedirect) {
-                showWebsite();
-                return;
-            }
+        async function checkRoleAndPermissions(userId) {
+            // Zeige immer die Startseite an
+            showWebsite();
+
+            if (bypassRedirect) return;
 
             const { data: profile, error: profileError } = await supabaseClient
                 .from('profiles')
@@ -443,35 +447,33 @@
                 .eq('id', userId)
                 .single();
             
-            // Prüfen ob Nutzer gebannt ist
+            // Prüfen ob Nutzer gesperrt ist
             if (profile && profile.banned === true) {
                 alert('Dein Account wurde gesperrt.');
                 await supabaseClient.auth.signOut();
+                location.reload();
                 return;
             }
 
-            if (profileError || !profile) {
-                showWebsite();
-            } else if (profile.role === 'admin') {
-                window.location.href = 'index.html';
-            } else if (profile.role === 'developer') {
-                window.location.href = 'index.html';
-            } else {
-                showWebsite();
+            if (!profileError && profile) {
+                // Passenden Panel-Button einblenden je nach Rolle
+                if (profile.role === 'admin') {
+                    document.getElementById('admin-btn').style.display = 'inline-flex';
+                } else if (profile.role === 'developer') {
+                    document.getElementById('dev-btn').style.display = 'inline-flex';
+                }
             }
         }
 
-        // 3. Beim Laden der Seite prüfen, ob bereits eine Session existiert
         async function checkInitialSession() {
             const { data: { session } } = await supabaseClient.auth.getSession();
             if (session) {
-                await checkRoleAndRedirect(session.user.id);
+                await checkRoleAndPermissions(session.user.id);
             } else {
-                // Keine Session vorhanden -> Login-Bildschirm sichtbar lassen (nichts tun, da er standardmäßig da ist)
+                // Keine Session -> Website trotzdem anzeigen, damit Login-Screen zu sehen ist
             }
         }
 
-        // Initiale Session-Prüfung beim Seitenaufruf starten
         checkInitialSession();
         
         async function loginUser() {
@@ -487,7 +489,7 @@
             
             const user = data.user;
             if (user) {
-                await checkRoleAndRedirect(user.id);
+                await checkRoleAndPermissions(user.id);
             }
         }
         
@@ -499,14 +501,12 @@
             else alert('Registrierung erfolgreich! Du kannst dich jetzt einloggen.');
         }
 
-        // 4. Ausloggen-Funktion
         async function logoutUser() {
             const { error } = await supabaseClient.auth.signOut();
             if (error) {
                 alert('Fehler beim Ausloggen: ' + error.message);
                 return;
             }
-            // Seite neu laden, wodurch die Session weg ist und der Login-Screen erscheint
             window.location.href = 'index.html';
         }
         
