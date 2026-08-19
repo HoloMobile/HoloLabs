@@ -123,7 +123,7 @@
                 .single();
 
             // Prüfen, ob der Nutzer die Rolle 'developer' (oder optional 'admin') hat
-            if (error || !profile || (profile.role !== 'developer' && profile.role !== 'admin')) {
+            if (error || !profile || (profile.role !== 'developer' && profile.role !== 'developer')) {
                 alert('Zugriff verweigert! Nur für Entwickler.');
                 window.location.href = 'index.html';
             }
