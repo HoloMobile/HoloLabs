@@ -61,7 +61,6 @@
             margin-bottom: 10px;
             font-size: 1.5rem;
         }
-        /* Feature 1: Statistik KPIs */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -87,7 +86,6 @@
             font-weight: 800;
             color: var(--text);
         }
-        /* Feature 2: Such- und Filterbereich */
         .controls-bar {
             display: flex;
             gap: 15px;
@@ -166,7 +164,6 @@
         .btn-nav:hover {
             background: rgba(255,255,255,0.2);
         }
-        /* Feature 3: Rollen Dropdown */
         .role-select {
             background: rgba(0,0,0,0.5);
             color: white;
@@ -176,7 +173,6 @@
             outline: none;
             font-size: 0.85rem;
         }
-        /* Feature 4: Broadcast Eingaben */
         .broadcast-box {
             display: flex;
             flex-direction: column;
@@ -210,7 +206,6 @@
             </div>
         </header>
 
-        <!-- Feature 1: Statistik-Dashboard (KPIs) -->
         <div class="stats-grid">
             <div class="stat-card">
                 <h3>Gesamt-Benutzer</h3>
@@ -230,7 +225,6 @@
             </div>
         </div>
 
-        <!-- Feature 4: System-Meldungen / Broadcast -->
         <div class="card">
             <h2>Globale System-Meldung senden</h2>
             <p style="color: var(--text-muted); font-size: 0.9rem;">Sende eine Ankündigung an alle angemeldeten User.</p>
@@ -240,12 +234,10 @@
             </div>
         </div>
 
-        <!-- Benutzerverwaltung mit Feature 2 & 3 -->
         <div class="card">
             <h2>Registrierte Benutzer</h2>
             <p style="color: var(--text-muted); margin-bottom: 15px;">Übersicht aller Accounts und Verwaltung des Zugriffs.</p>
             
-            <!-- Feature 2: Such- und Filterleiste -->
             <div class="controls-bar">
                 <input type="text" id="search-input" class="search-input" placeholder="Nach User-ID suchen..." oninput="filterUsers()">
                 <button class="filter-btn active" onclick="setFilter('all', this)">Alle</button>
@@ -279,8 +271,10 @@
 
         async function checkAdminAccess() {
             const { data: { session } } = await supabaseClient.auth.getSession();
+            
+            // Wenn nicht eingeloggt, zeige nur eine Info statt sofort hart umzuleiten
             if (!session) {
-                window.location.href = 'index.html';
+                document.getElementById('user-list').innerHTML = '<tr><td colspan="4" style="text-align: center; color: var(--danger);">Nicht eingeloggt. Bitte logge dich über die Startseite ein.</td></tr>';
                 return;
             }
 
@@ -291,8 +285,7 @@
                 .single();
 
             if (error || !profile || profile.role !== 'admin') {
-                alert('Zugriff verweigert! Nur für Administratoren.');
-                window.location.href = 'index.html';
+                document.getElementById('user-list').innerHTML = '<tr><td colspan="4" style="text-align: center; color: var(--danger);">Zugriff verweigert! Du hast keine Administrator-Rechte.</td></tr>';
             } else {
                 loadUsers();
             }
@@ -310,7 +303,6 @@
             renderTable(allUsersData);
         }
 
-        // Feature 1: Statistiken aktualisieren
         function updateStats() {
             const total = allUsersData.length;
             const banned = allUsersData.filter(u => u.banned === true).length;
@@ -323,7 +315,6 @@
             document.getElementById('stat-admins').innerText = admins;
         }
 
-        // Feature 2: Filter- und Suchlogik
         function setFilter(filterType, btnElement) {
             currentFilter = filterType;
             document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
@@ -336,7 +327,7 @@
             
             const filtered = allUsersData.filter(user => {
                 const matchesSearch = user.id.toLowerCase().includes(searchTerm) || 
-                                     (user.role && user.role.toLowerCase().includes(searchTerm));
+                                   (user.role && user.role.toLowerCase().includes(searchTerm));
                 
                 const isBanned = user.banned === true;
                 if (currentFilter === 'active' && isBanned) return false;
@@ -381,7 +372,6 @@
             });
         }
 
-        // Feature 3: Rollen direkt ändern
         async function changeRole(userId, newRole) {
             const { error } = await supabaseClient
                 .from('profiles')
@@ -392,7 +382,6 @@
                 alert('Fehler beim Ändern der Rolle: ' + error.message);
                 loadUsers();
             } else {
-                // Lokale Daten aktualisieren
                 const user = allUsersData.find(u => u.id === userId);
                 if (user) user.role = newRole;
                 updateStats();
@@ -412,7 +401,6 @@
             }
         }
 
-        // Feature 4: Broadcast absenden (Speichert in einer optionalen 'announcements' Tabelle oder gibt ein Feedback)
         async function sendBroadcast() {
             const message = document.getElementById('broadcast-msg').value.trim();
             if (!message) {
@@ -420,14 +408,11 @@
                 return;
             }
 
-            // Falls du eine Tabelle 'announcements' in Supabase anlegst, wird es dort gespeichert. 
-            // Andernfalls dient es hier als sauberer Funktionsaufruf mit Erfolgsmeldung.
             const { error } = await supabaseClient
                 .from('announcements')
                 .insert([{ message: message, created_at: new Date() }]);
 
             if (error) {
-                // Fallback, falls die Tabelle im Backend noch nicht existiert
                 alert('Nachricht wurde im Admin-Modus verarbeitet! (Hinweis: Lege in Supabase eine Tabelle "announcements" mit Spalten "message" und "created_at" an, um sie persistent zu speichern).');
             } else {
                 alert('System-Meldung erfolgreich an alle Benutzer gesendet!');
