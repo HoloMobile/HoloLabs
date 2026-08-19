@@ -168,8 +168,10 @@
 
         async function checkDeveloperAccess() {
             const { data: { session } } = await supabaseClient.auth.getSession();
+            
             if (!session) {
-                window.location.href = 'index.html';
+                logToConsole('[FEHLER] Nicht eingeloggt.');
+                document.getElementById('code-editor').value = '<!-- Zugriff verweigert: Nicht eingeloggt. Bitte logge dich über die Startseite ein. -->';
                 return;
             }
 
@@ -180,8 +182,8 @@
                 .single();
 
             if (error || !profile || profile.role !== 'developer') {
-                alert('Zugriff verweigert! Nur für Entwickler.');
-                window.location.href = 'index.html';
+                logToConsole('[FEHLER] Zugriff verweigert (Keine Entwickler-Rechte).');
+                document.getElementById('code-editor').value = '<!-- Zugriff verweigert! Nur für Entwickler. -->';
             } else {
                 loadCodeFile();
             }
