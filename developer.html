@@ -1,1 +1,141 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HoloLabs | Developer-Panel</title>
+    <!-- Supabase Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root {
+            --primary: #007bff;
+            --secondary: #00d2ff;
+            --bg: #030712;
+            --card-bg: rgba(30, 41, 59, 0.4);
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+            --danger: #ef4444;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+        }
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 40px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            padding-bottom: 20px;
+        }
+        .logo {
+            font-size: 24px;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .card {
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            margin-bottom: 20px;
+        }
+        .card h2 {
+            color: var(--secondary);
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+        .card p {
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+        .btn {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+        .btn:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+        .btn-danger {
+            background: var(--danger);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">HoloLabs // Dev-Environment</div>
+            <button class="btn btn-danger" onclick="logout()">Ausloggen</button>
+        </header>
 
+        <div class="card">
+ Entwickler-Dashboard
+            <p>Willkommen im geschützten Entwicklerbereich. Hier kannst du künftig API-Logs einsehen, System-Status überwachen oder Testfunktionen ausführen.</p>
+        </div>
+
+        <div class="card">
+            <h2>API & System Status</h2>
+            <p>Supabase Verbindung: <span id="status" style="color: #10b981; font-weight: bold;">Verbunden</span></p>
+        </div>
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'https://jhwlyuiughhvtopxplqe.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_Y6jlvYWTamP40tID3SUV-A_pUyc2qLv'; 
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        async function checkDeveloperAccess() {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            
+            // Wenn niemand eingeloggt ist, zurück zur Startseite
+            if (!session) {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            // Rolle aus der 'profiles'-Tabelle abfragen
+            const { data: profile, error } = await supabaseClient
+                .from('profiles')
+                .select('role')
+                .eq('id', session.user.id)
+                .single();
+
+            // Prüfen, ob der Nutzer die Rolle 'developer' (oder optional 'admin') hat
+            if (error || !profile || (profile.role !== 'developer' && profile.role !== 'admin')) {
+                alert('Zugriff verweigert! Nur für Entwickler.');
+                window.location.href = 'index.html';
+            }
+        }
+
+        async function logout() {
+            await supabaseClient.auth.signOut();
+            window.location.href = 'index.html';
+        }
+
+        // Sicherheitsprüfung beim Laden ausführen
+        checkDeveloperAccess();
+    </script>
+</body>
+</html>
