@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta name="google-site-verification" content="RgYyPgoHlXv8PyT3ZacDC5iMtR1zU7Zbyii0tWPC1GA" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HoloMobile | Exklusiver Zugang</title>
+    <!-- Supabase JavaScript Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root {
+            --primary: #007bff;
+            --secondary: #00d2ff;
+            --discord: #5865F2;
+            --bg: #030712;
+            --card-bg: rgba(30, 41, 59, 0.4);
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+            --danger: #ef4444; /* Neue Farbe für Warnungen/Regeln */
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+        }
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+            min-height: 100vh;
+        }
+        .ambient-glow {
+            position: fixed;
+            width: 500px;
+            height: 500px;
+            background: linear-gradient(135deg, rgba(0,123,255,0.15), rgba(0,210,255,0.15));
+            filter: blur(120px);
+            border-radius: 50%;
+            z-index: -1;
+            animation: floatGlow 12s infinite alternate ease-in-out;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+        }
+        @keyframes floatGlow {
+            0% { transform: translate(-60%, -60%) scale(1); }
+            100% { transform: translate(-40%, -40%) scale(1.2); }
+        }
+        #login-screen {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: fixed;
+            width: 100%;
+            z-index: 2000;
+            background: var(--bg);
+            transition: opacity 0.5s ease;
+        }
+        .login-card {
+            background: rgba(15, 23, 42, 0.7);
+            padding: 45px;
+            border-radius: 24px;
+            border: 1px solid rgba(255,255,255,0.08);
+            backdrop-filter: blur(25px);
+            text-align: center;
+            width: 380px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+        }
+        .login-card h2 {
+            font-size: 1.8rem;
+            margin-bottom: 25px;
+            font-weight: 700;
+        }
+        .login-input {
+            width: 100%;
+            padding: 14px 16px;
+            margin: 10px 0 15px 0;
+            background: rgba(0,0,0,0.4);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            color: white;
+            font-size: 1rem;
+            outline: none;
+            transition: 0.3s;
+        }
+        .login-input:focus {
+            border-color: var(--secondary);
+            box-shadow: 0 0 15px rgba(0,210,255,0.2);
+        }
+        #main-website {
+            display: none;
+            opacity: 0;
+            transition: opacity 0.8s ease;
+        }
+        #main-website.visible {
+            display: block;
+            opacity: 1;
+        }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 8%;
+            background: rgba(3, 7, 18, 0.8);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .logo {
+            font-size: 26px;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        nav {
+            display: flex;
+            align-items: center;
+            gap: 25px;
+        }
+        nav a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+        nav a:hover {
+            color: var(--text);
+        }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 12px 30px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(0, 123, 255, 0.3);
+        }
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(0, 210, 255, 0.5);
+        }
+        .discord-btn {
+            background: var(--discord) !important;
+            box-shadow: 0 4px 20px rgba(88, 101, 242, 0.3) !important;
+        }
+        .discord-btn:hover {
+            box-shadow: 0 8px 30px rgba(88, 101, 242, 0.5) !important;
+        }
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 120px 20px 60px 20px;
+            position: relative;
+        }
+        .hero h1 {
+            font-size: 4.5rem;
+            margin-bottom: 20px;
+            font-weight: 800;
+            line-height: 1.1;
+            background: linear-gradient(135deg, #ffffff, var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .hero p {
+            font-size: 1.25rem;
+            color: var(--text-muted);
+            max-width: 650px;
+            margin-bottom: 40px;
+        }
+        .access-section {
+            background: linear-gradient(165deg, rgba(30, 41, 59, 0.6) 0%, rgba(15, 23, 42, 0.8) 100%);
+            padding: 40px;
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(15px);
+            max-width: 550px;
+            width: 100%;
+            margin: 20px auto 0 auto;
+            text-align: center;
+            box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5);
+        }
+        .access-section h3 {
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+            background: linear-gradient(to right, #5865F2, var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .access-section p {
+            font-size: 1.05rem;
+            line-height: 1.6;
+            margin-bottom: 25px;
+            color: var(--text-muted);
+            max-width: 100%;
+        }
+        .features {
+            padding: 120px 10%;
+            background: rgba(3, 7, 18, 0.5);
+        }
+        .features h2 {
+            text-align: center;
+            font-size: 3rem;
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 50px;
+        }
+        .feature-card {
+            background: var(--card-bg);
+            padding: 40px;
+            border-radius: 24px;
+            transition: all 0.4s ease;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+        }
+        .feature-card:hover {
+            transform: translateY(-8px);
+            border-color: var(--secondary);
+            box-shadow: 0 20px 40px -15px rgba(0, 210, 255, 0.15);
+        }
+        .feature-card h3 {
+            margin-bottom: 15px;
+            color: var(--secondary);
+            font-size: 1.4rem;
+        }
+        .feature-card p {
+            color: var(--text-muted);
+            font-size: 1rem;
+        }
+        /* NEU: Bereich für Regeln und Sicherheit */
+        .rules {
+            padding: 100px 10%;
+            background: #050a16;
+            text-align: center;
+            border-top: 1px solid rgba(255,255,255,0.02);
+        }
+        .rules h2 {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+        .rules-desc {
+            color: var(--text-muted);
+            margin-bottom: 50px;
+            font-size: 1.1rem;
+        }
+        .rules-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .rule-card {
+            background: rgba(239, 68, 68, 0.05);
+            padding: 40px;
+            border-radius: 24px;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            text-align: left;
+            transition: all 0.3s ease;
+        }
+        .rule-card:hover {
+            border-color: var(--danger);
+            box-shadow: 0 15px 35px -10px rgba(239, 68, 68, 0.2);
+            transform: translateY(-5px);
+        }
+        .rule-card h3 {
+            color: var(--danger);
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .rule-card p {
+            color: var(--text-muted);
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+        footer {
+            text-align: center;
+            padding: 40px;
+            background: #010409;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            border-top: 1px solid rgba(255,255,255,0.03);
+        }
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 3rem; }
+            .rules h2 { font-size: 2.2rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="ambient-glow"></div>
+    <div id="login-screen">
+        <div class="login-card">
+            <h2>HoloMobile <span style="color:var(--secondary)">Zugang</span></h2>
+            <input type="email" id="email" class="login-input" placeholder="E-Mail-Adresse eingeben">
+            <input type="password" id="password" class="login-input" placeholder="Passwort eingeben">
+            <div style="display: flex; gap: 10px; margin-top: 10px;">
+                <button class="btn" style="width: 50%; padding: 10px; font-size: 0.9rem;" onclick="loginUser()">Einloggen</button>
+                <button class="btn" style="width: 50%; padding: 10px; font-size: 0.9rem; background: rgba(255,255,255,0.1);" onclick="registerUser()">Registrieren</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="main-website">
+        <header>
+            <div class="logo">HoloMobile</div>
+            <nav>
+                <a href="#features">Vorteile</a>
+                <a href="#download">Zugang</a>
+                <a href="#rules">Regeln</a> <!-- Menüpunkt hinzugefügt -->
+                <a href="https://discord.me/hololabs" target="_blank" class="btn discord-btn" style="padding: 8px 20px; font-size: 0.9rem;">Discord</a>
+            </nav>
+        </header>
+
+        <section class="hero" id="download">
+            <h1>Dein intelligentster <br><span style="color: var(--secondary);">KI-Begleiter</span></h1>
+            <p>Erlebe sprachgesteuerte Interaktion, ein dynamisches Gedächtnis und smarte Systembefehle direkt auf deinem Smartphone.</p>
+            <div class="access-section">
+                <h3>Exklusiver Zugang</h3>
+                <p>HoloMobile wird exklusiv über unsere Community verteilt. Tritt dem Discord-Server bei, um deinen persönlichen Zugang sicher freizuschalten.</p>
+                <a href="https://discord.me/hololabs" target="_blank" class="btn discord-btn" style="width: 100%; padding: 15px; font-size: 1.1rem;">Jetzt Discord beitreten</a>
+            </div>
+        </section>
+
+        <section class="features" id="features">
+            <h2>Warum HoloMobile kaufen?</h2>
+            <p style="text-align: center; color: var(--text-muted); margin-bottom: 20px;">Die Premium-KI ohne Kompromisse.</p>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h3>Unlimitierte Nachrichten</h3>
+                    <p>Keine Limits, keine Warteschlangen und keine Abo-Fallen. Schreibe so viele Fragen und Nachrichten, wie du willst.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Live Google-Zugriff</h3>
+                    <p>Holo ist immer auf dem neuesten Stand. Er sucht für dich jede Information in Echtzeit aus dem Internet.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>24/7 Support</h3>
+                    <p>Exklusiver Support: Erreiche uns bei Problemen jederzeit telefonisch per E-Mail oder per Discord – wir sind für dich da.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Mitwachsendes Gedächtnis</h3>
+                    <p>Holo lernt dich kennen und merkt sich wichtige Details für deinen Alltag. Dein persönlicher Assistent, der wirklich mitdenkt. WICHTIG! Alles was du mit Holo schreibst bleibt unter dir und Holo die Entwickler sehen und Speichern keine Daten über dich!</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Smarte Systembefehle</h3>
+                    <p>Steuere dein Smartphone mit deiner Stimme: Apps öffnen, Kontakte anrufen oder komplexe Aufgaben in Sekunden erledigen.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Einmalige Freischaltung</h3>
+                    <p>Ein fairer Preis von nur 5€ für lebenslangen Zugriff auf alle Premium-Features. Keine monatlichen Kosten.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- NEU: Nutzungs- & Sicherheitsrichtlinien -->
+        <section class="rules" id="rules">
+            <h2>Nutzungs- & Sicherheitsrichtlinien</h2>
+            <p class="rules-desc">Um die Sicherheit und Integrität unserer Plattform zu gewährleisten, gelten folgende Grundregeln:</p>
+            
+            <div class="rules-grid">
+                <div class="rule-card">
+                    <h3>⚠️ Schutz deiner Privatsphäre</h3>
+                    <p>Zu deiner eigenen Sicherheit: Teile niemals sensible und persönliche Informationen wie Bankverbindungen, private Wohnadressen, Passwörter oder ähnliches im Chat. Achte stets auf deinen digitalen Fußabdruck.</p>
+                </div>
+                <div class="rule-card">
+                    <h3>🚫 Zero-Tolerance für Hacking</h3>
+                    <p>Die Systemintegrität hat höchste Priorität. Jegliche Versuche, das System zu manipulieren, zu überlasten oder zu hacken, werden serverseitig in Echtzeit erkannt. Ein solcher Verstoß führt automatisiert und ohne Vorwarnung zu einem permanenten, lebenslangen IP-Bann.</p>
+                </div>
+            </div>
+        </section>
+
+<footer>
+    <p>&copy; 2026 HoloLabs. Alle Rechte vorbehalten.</p>
+    <p>
+        <a href="datenschutz.html" style="color: var(--text-muted); text-decoration: underline; margin-right: 15px;">Datenschutzerklärung</a>
+        <a href="impressum.html" style="color: var(--text-muted); text-decoration: underline;">Impressum</a>
+    </p>
+</footer>
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'https://jhwlyuiughhvtopxplqe.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_Y6jlvYWTamP40tID3SUV-A_pUyc2qLv'; 
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        async function loginUser() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+            if (error) alert('Login fehlgeschlagen: ' + error.message);
+            else showWebsite();
+        }
+        
+        async function registerUser() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const { error } = await supabaseClient.auth.signUp({ email, password });
+            if (error) alert('Registrierung fehlgeschlagen: ' + error.message);
+            else alert('Registrierung erfolgreich! Du kannst dich jetzt einloggen.');
+        }
+        
+        function showWebsite() {
+            const loginScreen = document.getElementById('login-screen');
+            const mainWebsite = document.getElementById('main-website');
+            loginScreen.style.opacity = '0';
+            setTimeout(() => {
+                loginScreen.style.display = 'none';
+                mainWebsite.classList.add('visible');
+            }, 400);
+        }
+    </script>
+</body>
+</html>
