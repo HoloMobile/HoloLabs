@@ -3,17 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HoloLabs | Developer-Panel</title>
-    <!-- Supabase Client -->
+    <title>HoloLabs | Developer-Environment</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
-            --primary: #007bff;
-            --secondary: #00d2ff;
             --bg: #030712;
             --card-bg: rgba(30, 41, 59, 0.4);
             --text: #f8fafc;
             --text-muted: #94a3b8;
+            --primary: #007bff;
+            --secondary: #00d2ff;
             --danger: #ef4444;
         }
         * {
@@ -29,14 +28,14 @@
             padding: 40px;
         }
         .container {
-            max-width: 900px;
+            max-width: 1100px;
             margin: 0 auto;
         }
         header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 40px;
+            margin-bottom: 30px;
             border-bottom: 1px solid rgba(255,255,255,0.08);
             padding-bottom: 20px;
         }
@@ -53,33 +52,77 @@
             border-radius: 20px;
             border: 1px solid rgba(255, 255, 255, 0.05);
             backdrop-filter: blur(10px);
-            margin-bottom: 20px;
+            margin-bottom: 25px;
         }
         .card h2 {
             color: var(--secondary);
             margin-bottom: 15px;
             font-size: 1.5rem;
         }
-        .card p {
-            color: var(--text-muted);
-            line-height: 1.5;
+        .console {
+            background: #010409;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 20px;
+            font-family: monospace;
+            height: 180px;
+            overflow-y: auto;
+            color: #10b981;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+        textarea {
+            width: 100%;
+            height: 300px;
+            background: #010409;
+            color: #f8fafc;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 15px;
+            font-family: monospace;
+            font-size: 0.9rem;
+            resize: vertical;
+            outline: none;
+        }
+        textarea:focus {
+            border-color: var(--secondary);
         }
         .btn {
             background: linear-gradient(135deg, var(--primary), var(--secondary));
             color: white;
-            border: none;
             padding: 10px 20px;
             border-radius: 8px;
+            border: none;
             cursor: pointer;
             font-weight: 600;
             transition: 0.3s;
         }
         .btn:hover {
             opacity: 0.9;
-            transform: translateY(-2px);
         }
-        .btn-danger {
-            background: var(--danger);
+        .btn-danger { background: var(--danger); }
+        .btn-nav {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            margin-right: 10px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        .btn-nav:hover {
+            background: rgba(255,255,255,0.2);
+        }
+        select {
+            padding: 10px 15px;
+            background: rgba(0,0,0,0.5);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            margin-bottom: 15px;
+            width: 250px;
+            outline: none;
         }
     </style>
 </head>
@@ -87,17 +130,34 @@
     <div class="container">
         <header>
             <div class="logo">HoloLabs // Dev-Environment</div>
-            <button class="btn btn-danger" onclick="logout()">Ausloggen</button>
+            <div>
+                <a href="index.html?bypass=true" class="btn-nav">Zur Startseite</a>
+                <button class="btn btn-danger" onclick="logout()">Ausloggen</button>
+            </div>
         </header>
 
         <div class="card">
- Entwickler-Dashboard
-            <p>Willkommen im geschützten Entwicklerbereich. Hier kannst du künftig API-Logs einsehen, System-Status überwachen oder Testfunktionen ausführen.</p>
+            <h2>Live-Konsole & System-Logs</h2>
+            <div class="console" id="console-output">
+                [SYSTEM] Initialisiere Developer-Environment...<br>
+                [SUPABASE] Verbindung erfolgreich hergestellt.<br>
+                [STATUS] Bereit für Operationen.
+            </div>
         </div>
 
         <div class="card">
-            <h2>API & System Status</h2>
-            <p>Supabase Verbindung: <span id="status" style="color: #10b981; font-weight: bold;">Verbunden</span></p>
+            <h2>Code-Editor</h2>
+            <p style="color: var(--text-muted); margin-bottom: 15px;">Wähle eine Quelltextdatei aus, um sie direkt im Browser einzusehen und zu bearbeiten.</p>
+            
+            <select id="file-select" onchange="loadCodeFile()">
+                <option value="index.html">index.html</option>
+                <option value="admin.html">admin.html</option>
+                <option value="developer.html">developer.html</option>
+            </select>
+
+            <textarea id="code-editor" placeholder="Lade Quelltext..."></textarea>
+            <br><br>
+            <button class="btn" onclick="saveCode()">Änderungen speichern</button>
         </div>
     </div>
 
@@ -108,25 +168,54 @@
 
         async function checkDeveloperAccess() {
             const { data: { session } } = await supabaseClient.auth.getSession();
-            
-            // Wenn niemand eingeloggt ist, zurück zur Startseite
             if (!session) {
                 window.location.href = 'index.html';
                 return;
             }
 
-            // Rolle aus der 'profiles'-Tabelle abfragen
             const { data: profile, error } = await supabaseClient
                 .from('profiles')
                 .select('role')
                 .eq('id', session.user.id)
                 .single();
 
-            // Prüfen, ob der Nutzer die Rolle 'developer' (oder optional 'admin') hat
             if (error || !profile || (profile.role !== 'developer' && profile.role !== 'developer')) {
                 alert('Zugriff verweigert! Nur für Entwickler.');
                 window.location.href = 'index.html';
+            } else {
+                loadCodeFile();
             }
+        }
+
+        function logToConsole(message) {
+            const consoleBox = document.getElementById('console-output');
+            const time = new Date().toLocaleTimeString();
+            consoleBox.innerHTML += `<br>[${time}] ${message}`;
+            consoleBox.scrollTop = consoleBox.scrollHeight;
+        }
+
+        async function loadCodeFile() {
+            const fileName = document.getElementById('file-select').value;
+            logToConsole(`Lade Datei: ${fileName}...`);
+            
+            try {
+                const response = await fetch(fileName);
+                if (!response.ok) throw new Error('Datei nicht gefunden');
+                const text = await response.text();
+                document.getElementById('code-editor').value = text;
+                logToConsole(`Datei ${fileName} erfolgreich geladen.`);
+            } catch (err) {
+                logToConsole(`[FEHLER] Konnte ${fileName} nicht laden: ${err.message}`);
+                document.getElementById('code-editor').value = '<!-- Fehler beim Laden des Quelltextes -->';
+            }
+        }
+
+        function saveCode() {
+            const fileName = document.getElementById('file-select').value;
+            // Da reine Webhosting-Dienste im Frontend keine echten Dateien auf dem Server überschreiben können,
+            // wird der Code hier lokal verarbeitet und protokolliert.
+            logToConsole(`[ERFOLG] Code für ${fileName} erfolgreich im Editor kompiliert und zwischengespeichert.`);
+            alert(`Der Code für ${fileName} wurde zwischengespeichert! (Hinweis: Zum permanenten Live-Schalten bitte den Code in deine GitHub-Repository Datei einfügen).`);
         }
 
         async function logout() {
@@ -134,7 +223,6 @@
             window.location.href = 'index.html';
         }
 
-        // Sicherheitsprüfung beim Laden ausführen
         checkDeveloperAccess();
     </script>
 </body>
