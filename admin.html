@@ -272,7 +272,6 @@
         async function checkAdminAccess() {
             const { data: { session } } = await supabaseClient.auth.getSession();
             
-            // Wenn nicht eingeloggt, zeige nur eine Info statt sofort hart umzuleiten
             if (!session) {
                 document.getElementById('user-list').innerHTML = '<tr><td colspan="4" style="text-align: center; color: var(--danger);">Nicht eingeloggt. Bitte logge dich über die Startseite ein.</td></tr>';
                 return;
@@ -286,6 +285,8 @@
 
             if (error || !profile || profile.role !== 'admin') {
                 document.getElementById('user-list').innerHTML = '<tr><td colspan="4" style="text-align: center; color: var(--danger);">Zugriff verweigert! Du hast keine Administrator-Rechte.</td></tr>';
+                // Automatischer Schutz: Umleitung bei fehlenden Admin-Rechten
+                setTimeout(() => { window.location.href = 'index.html'; }, 3000);
             } else {
                 loadUsers();
             }
@@ -352,22 +353,43 @@
                 const tr = document.createElement('tr');
                 const isBanned = user.banned === true;
                 
-                tr.innerHTML = `
-                    <td style="font-family: monospace; font-size: 0.85rem;">${user.id}</td>
-                    <td>
-                        <select class="role-select" onchange="changeRole('${user.id}', this.value)">
-                            <option value="user" ${user.role === 'user' ? 'selected' : ''}>user</option>
-                            <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>admin</option>
-                            <option value="developer" ${user.role === 'developer' ? 'selected' : ''}>developer</option>
-                        </select>
-                    </td>
-                    <td><span style="color: ${isBanned ? 'var(--danger)' : 'var(--success)'}; font-weight: bold;">${isBanned ? 'Gesperrt' : 'Aktiv'}</span></td>
-                    <td>
-                        <button class="btn ${isBanned ? 'btn-success' : 'btn-danger'}" onclick="toggleBan('${user.id}', ${!isBanned})">
-                            ${isBanned ? 'Entsperren' : 'Bannen'}
-                        </button>
-                    </td>
-                `;
+                // Sicheres Rendering per DOM-Elementen zur XSS-Vermeidung
+                const tdId = document.createElement('td');
+                tdId.style.fontFamily = 'monospace';
+                tdId.style.fontSize = '0.85rem';
+                tdId.textContent = user.id;
+
+                const tdRole = document.createElement('td');
+                const select = document.createElement('select');
+                select.className = 'role-select';
+                ['user', 'admin', 'developer'].forEach(r => {
+                    const opt = document.createElement('option');
+                    opt.value = r;
+                    opt.textContent = r;
+                    if (user.role === r) opt.selected = true;
+                    select.appendChild(opt);
+                });
+                select.onchange = () => changeRole(user.id, select.value);
+                tdRole.appendChild(select);
+
+                const tdStatus = document.createElement('td');
+                const spanStatus = document.createElement('span');
+                spanStatus.style.color = isBanned ? 'var(--danger)' : 'var(--success)';
+                spanStatus.style.fontWeight = 'bold';
+                spanStatus.textContent = isBanned ? 'Gesperrt' : 'Aktiv';
+                tdStatus.appendChild(spanStatus);
+
+                const tdAction = document.createElement('td');
+                const btnAction = document.createElement('button');
+                btnAction.className = `btn ${isBanned ? 'btn-success' : 'btn-danger'}`;
+                btnAction.textContent = isBanned ? 'Entsperren' : 'Bannen';
+                btnAction.onclick = () => toggleBan(user.id, !isBanned);
+                tdAction.appendChild(btnAction);
+
+                tr.appendChild(tdId);
+                tr.appendChild(tdRole);
+                tr.appendChild(tdStatus);
+                tr.appendChild(tdAction);
                 tbody.appendChild(tr);
             });
         }
