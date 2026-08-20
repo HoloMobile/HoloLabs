@@ -6,7 +6,6 @@
     <title>HoloLabs | Entwicklung</title>
     <meta name="description" content="HoloMobile – Dein intelligentster KI-Begleiter fürs Smartphone mit Live-Google-Suche, Sprachsteuerung und mitwachsendem Gedächtnis.">
     <link rel="icon" type="image/png" href="favicon.png">
-    <meta name="google-site-verification" content="RgYyPgoHlXv8PyT3ZacDC5iMtR1zU7Zbyii0tWPC1GA" />
     
     <!-- Supabase JavaScript Client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -52,57 +51,6 @@
         @keyframes floatGlow {
             0% { transform: translate(-60%, -60%) scale(1); }
             100% { transform: translate(-40%, -40%) scale(1.2); }
-        }
-        #login-screen {
-            height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: fixed;
-            width: 100%;
-            z-index: 2000;
-            background: var(--bg);
-            transition: opacity 0.5s ease;
-        }
-        .login-card {
-            background: rgba(15, 23, 42, 0.7);
-            padding: 45px;
-            border-radius: 24px;
-            border: 1px solid rgba(255,255,255,0.08);
-            backdrop-filter: blur(25px);
-            text-align: center;
-            width: 380px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
-        }
-        .login-card h2 {
-            font-size: 1.8rem;
-            margin-bottom: 25px;
-            font-weight: 700;
-        }
-        .login-input {
-            width: 100%;
-            padding: 14px 16px;
-            margin: 10px 0 15px 0;
-            background: rgba(0,0,0,0.4);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 12px;
-            color: white;
-            font-size: 1rem;
-            outline: none;
-            transition: 0.3s;
-        }
-        .login-input:focus {
-            border-color: var(--secondary);
-            box-shadow: 0 0 15px rgba(0,210,255,0.2);
-        }
-        #main-website {
-            display: none;
-            opacity: 0;
-            transition: opacity 0.8s ease;
-        }
-        #main-website.visible {
-            display: block;
-            opacity: 1;
         }
         header {
             display: flex;
@@ -331,125 +279,119 @@
 </head>
 <body>
     <div class="ambient-glow"></div>
-    <div id="login-screen">
-        <div class="login-card">
-            <h2>HoloLabs <span style="color:var(--secondary)">Zugang</span></h2>
-            <input type="email" id="email" class="login-input" placeholder="E-Mail-Adresse eingeben">
-            <input type="password" id="password" class="login-input" placeholder="Passwort eingeben">
-            <div style="display: flex; gap: 10px; margin-top: 10px;">
-                <button class="btn" style="width: 50%; padding: 10px; font-size: 0.9rem;" onclick="loginUser()">Einloggen</button>
-                <button class="btn" style="width: 50%; padding: 10px; font-size: 0.9rem; background: rgba(255,255,255,0.1);" onclick="registerUser()">Registrieren</button>
+    
+    <header>
+        <div class="logo">HoloMobile</div>
+        <nav>
+            <a href="#features">Vorteile</a>
+            <a href="#download">Zugang</a>
+            <a href="#rules">Regeln</a>
+            
+            <!-- Rollen-basierte Buttons -->
+            <a href="admin.html" id="admin-btn" class="btn" style="display: none; padding: 8px 16px; font-size: 0.9rem; background: var(--danger) !important; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);">Admin Panel</a>
+            <a href="developer.html" id="dev-btn" class="btn" style="display: none; padding: 8px 16px; font-size: 0.9rem; background: var(--warning) !important; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);">Dev Panel</a>
+
+            <a href="https://discord.me/hololabs" target="_blank" class="btn discord-btn" style="padding: 8px 20px; font-size: 0.9rem;">Discord</a>
+            <button class="btn logout-btn" onclick="logoutUser()">Ausloggen</button>
+        </nav>
+    </header>
+
+    <section class="hero" id="download">
+        <h1>Dein intelligentster <br><span style="color: var(--secondary);">KI-Begleiter</span></h1>
+        <p>Erlebe sprachgesteuerte Interaktion, ein dynamisches Gedächtnis und smarte Systembefehle direkt auf deinem Smartphone.</p>
+        <div class="access-section">
+            <h3>Exklusiver Zugang</h3>
+            <p>HoloMobile wird exklusiv über unsere Community verteilt. Tritt dem Discord-Server bei, um deinen persönlichen Zugang sicher freizuschalten.</p>
+            <a href="https://discord.me/hololabs" target="_blank" class="btn discord-btn" style="width: 100%; padding: 15px; font-size: 1.1rem;">Jetzt Discord beitreten</a>
+        </div>
+    </section>
+
+    <section class="features" id="features">
+        <h2>Warum HoloMobile kaufen?</h2>
+        <p style="text-align: center; color: var(--text-muted); margin-bottom: 20px;">Die Premium-KI ohne Kompromisse.</p>
+        <div class="feature-grid">
+            <div class="feature-card">
+                <h3>Unlimitierte Nachrichten</h3>
+                <p>Keine Limits, keine Warteschlangen und keine Abo-Fallen. Schreibe so viele Fragen und Nachrichten, wie du willst.</p>
+            </div>
+            <div class="feature-card">
+                <h3>Live Google-Zugriff</h3>
+                <p>Holo is immer auf dem neuesten Stand. Er sucht für dich jede Information in Echtzeit aus dem Internet.</p>
+            </div>
+            <div class="feature-card">
+                <h3>24/7 Support</h3>
+                <p>Exklusiver Support: Erreiche uns bei Problemen jederzeit per E-Mail oder per Discord – wir sind für dich da.</p>
+            </div>
+            <div class="feature-card">
+                <h3>Mitwachsendes Gedächtnis</h3>
+                <p>Holo lernt dich kennen und merkt sich wichtige Details für deinen Alltag. Alles was du mit Holo schreibst bleibt unter dir und Holo, die Entwickler speichern keine Daten über dich!</p>
+            </div>
+            <div class="feature-card">
+                <h3>Smarte Systembefehle</h3>
+                <p>Steuere dein Smartphone mit deiner Stimme: Apps öffnen, Kontakte anrufen oder komplexe Aufgaben in Sekunden erledigen.</p>
+            </div>
+            <div class="feature-card">
+                <h3>Einmalige Freischaltung</h3>
+                <p>Ein fairer Preis von nur 5€ für lebenslangen Zugriff auf alle Premium-Features. Keine monatlichen Kosten.</p>
             </div>
         </div>
-    </div>
-    
-    <div id="main-website">
-        <header>
-            <div class="logo">HoloMobile</div>
-            <nav>
-                <a href="#features">Vorteile</a>
-                <a href="#download">Zugang</a>
-                <a href="#rules">Regeln</a>
-                
-                <!-- Rollen-basierte Buttons (Standardmäßig versteckt) -->
-                <a href="admin.html" id="admin-btn" class="btn" style="display: none; padding: 8px 16px; font-size: 0.9rem; background: var(--danger) !important; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);">Admin Panel</a>
-                <a href="developer.html" id="dev-btn" class="btn" style="display: none; padding: 8px 16px; font-size: 0.9rem; background: var(--warning) !important; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);">Dev Panel</a>
+    </section>
 
-                <a href="https://discord.me/hololabs" target="_blank" class="btn discord-btn" style="padding: 8px 20px; font-size: 0.9rem;">Discord</a>
-                <button class="btn logout-btn" onclick="logoutUser()">Ausloggen</button>
-            </nav>
-        </header>
-
-        <section class="hero" id="download">
-            <h1>Dein intelligentster <br><span style="color: var(--secondary);">KI-Begleiter</span></h1>
-            <p>Erlebe sprachgesteuerte Interaktion, ein dynamisches Gedächtnis und smarte Systembefehle direkt auf deinem Smartphone.</p>
-            <div class="access-section">
-                <h3>Exklusiver Zugang</h3>
-                <p>HoloMobile wird exklusiv über unsere Community verteilt. Tritt dem Discord-Server bei, um deinen persönlichen Zugang sicher freizuschalten.</p>
-                <a href="https://discord.me/hololabs" target="_blank" class="btn discord-btn" style="width: 100%; padding: 15px; font-size: 1.1rem;">Jetzt Discord beitreten</a>
+    <section class="rules" id="rules">
+        <h2>Nutzungs- & Sicherheitsrichtlinien</h2>
+        <p class="rules-desc">Um die Sicherheit und Integrität unserer Plattform zu gewährleisten, gelten folgende Grundregeln:</p>
+        
+        <div class="rules-grid">
+            <div class="rule-card">
+                <h3>⚠️ Schutz deiner Privatsphäre</h3>
+                <p>Zu deiner eigenen Sicherheit: Teile niemals sensible und persönliche Informationen wie Bankverbindungen, private Wohnadressen oder Passwörter im Chat.</p>
             </div>
-        </section>
-
-        <section class="features" id="features">
-            <h2>Warum HoloMobile kaufen?</h2>
-            <p style="text-align: center; color: var(--text-muted); margin-bottom: 20px;">Die Premium-KI ohne Kompromisse.</p>
-            <div class="feature-grid">
-                <div class="feature-card">
-                    <h3>Unlimitierte Nachrichten</h3>
-                    <p>Keine Limits, keine Warteschlangen und keine Abo-Fallen. Schreibe so viele Fragen und Nachrichten, wie du willst.</p>
-                </div>
-                <div class="feature-card">
-                    <h3>Live Google-Zugriff</h3>
-                    <p>Holo ist immer auf dem neuesten Stand. Er sucht für dich jede Information in Echtzeit aus dem Internet.</p>
-                </div>
-                <div class="feature-card">
-                    <h3>24/7 Support</h3>
-                    <p>Exklusiver Support: Erreiche uns bei Problemen jederzeit telefonisch per E-Mail oder per Discord – wir sind für dich da.</p>
-                </div>
-                <div class="feature-card">
-                    <h3>Mitwachsendes Gedächtnis</h3>
-                    <p>Holo lernt dich kennen und merkt sich wichtige Details für deinen Alltag. Dein persönlicher Assistent, der wirklich mitdenkt. WICHTIG! Alles was du mit Holo schreibst bleibt unter dir und Holo die Entwickler sehen und Speichern keine Daten über dich!</p>
-                </div>
-                <div class="feature-card">
-                    <h3>Smarte Systembefehle</h3>
-                    <p>Steuere dein Smartphone mit deiner Stimme: Apps öffnen, Kontakte anrufen oder komplexe Aufgaben in Sekunden erledigen.</p>
-                </div>
-                <div class="feature-card">
-                    <h3>Einmalige Freischaltung</h3>
-                    <p>Ein fairer Preis von nur 5€ für lebenslangen Zugriff auf alle Premium-Features. Keine monatlichen Kosten.</p>
-                </div>
+            <div class="rule-card">
+                <h3>🚫 Zero-Tolerance für Hacking</h3>
+                <p>Die Systemintegrität hat höchste Priorität. Manipulationsversuche führen automatisiert und ohne Vorwarnung zu einem permanenten IP-Bann.</p>
             </div>
-        </section>
+        </div>
+    </section>
 
-        <section class="rules" id="rules">
-            <h2>Nutzungs- & Sicherheitsrichtlinien</h2>
-            <p class="rules-desc">Um die Sicherheit und Integrität unserer Plattform zu gewährleisten, gelten folgende Grundregeln:</p>
-            
-            <div class="rules-grid">
-                <div class="rule-card">
-                    <h3>⚠️ Schutz deiner Privatsphäre</h3>
-                    <p>Zu deiner eigenen Sicherheit: Teile niemals sensible und persönliche Informationen wie Bankverbindungen, private Wohnadressen, Passwörter oder ähnliches im Chat. Achte stets auf deinen digitalen Fußabdruck.</p>
-                </div>
-                <div class="rule-card">
-                    <h3>🚫 Zero-Tolerance für Hacking</h3>
-                    <p>Die Systemintegrität hat höchste Priorität. Jegliche Versuche, das System zu manipulieren, zu überlasten oder zu hacken, werden serverseitig in Echtzeit erkannt. Ein solcher Verstoß führt automatisiert und ohne Vorwarnung zu einem permanenten, lebenslangen IP-Bann.</p>
-                </div>
-            </div>
-        </section>
-
-        <footer>
-            <p>&copy; 2026 HoloLabs. Alle Rechte vorbehalten.</p>
-            <p>
-                <a href="datenschutz.html" style="color: var(--text-muted); text-decoration: underline; margin-right: 15px;">Datenschutzerklärung</a>
-                <a href="impressum.html" style="color: var(--text-muted); text-decoration: underline;">Impressum</a>
-            </p>
-        </footer>
-    </div>
+    <footer>
+        <p>&copy; 2026 HoloLabs. Alle Rechte vorbehalten.</p>
+        <p>
+            <a href="datenschutz.html" style="color: var(--text-muted); text-decoration: underline; margin-right: 15px;">Datenschutzerklärung</a>
+            <a href="impressum.html" style="color: var(--text-muted); text-decoration: underline;">Impressum</a>
+        </p>
+    </footer>
 
     <script>
         const SUPABASE_URL = 'https://jhwlyuiughhvtopxplqe.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_Y6jlvYWTamP40tID3SUV-A_pUyc2qLv'; 
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         
-        // URL-Parameter prüfen (z. B. index.html?bypass=true)
         const urlParams = new URLSearchParams(window.location.search);
         const bypassRedirect = urlParams.get('bypass') === 'true';
 
-        async function checkRoleAndPermissions(userId) {
-            showWebsite();
+        // Schutz der Hauptseite: Wenn nicht eingeloggt, direkt zurück zur login.html schicken
+        async function protectPage() {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            
+            if (!session || !session.user) {
+                window.location.replace('login.html');
+                return;
+            }
 
             if (bypassRedirect) return;
 
+            // Rollen- und Bannprüfung
             const { data: profile, error: profileError } = await supabaseClient
                 .from('profiles')
                 .select('role, banned')
-                .eq('id', userId)
+                .eq('id', session.user.id)
                 .single();
             
             if (profile && profile.banned === true) {
                 alert('Dein Account wurde gesperrt.');
                 await supabaseClient.auth.signOut();
-                location.reload();
+                localStorage.clear();
+                window.location.replace('login.html');
                 return;
             }
 
@@ -462,61 +404,7 @@
             }
         }
 
-        async function checkInitialSession() {
-            try {
-                const { data: { session } } = await supabaseClient.auth.getSession();
-                if (session && session.user) {
-                    await checkRoleAndPermissions(session.user.id);
-                } else {
-                    showWebsite();
-                }
-            } catch (err) {
-                console.error('Session-Prüfung fehlgeschlagen:', err);
-                showWebsite();
-            }
-        }
-
-        checkInitialSession();
-        
-        async function loginUser() {
-            const emailField = document.getElementById('email');
-            const passwordField = document.getElementById('password');
-            const email = emailField ? emailField.value.trim() : '';
-            const password = passwordField ? passwordField.value : '';
-            
-            if (!email || !password) {
-                alert('Bitte fülle alle Felder aus.');
-                return;
-            }
-
-            const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
-            
-            if (error) {
-                alert('Login fehlgeschlagen: ' + error.message);
-                return;
-            }
-            
-            const user = data.user;
-            if (user) {
-                await checkRoleAndPermissions(user.id);
-            }
-        }
-        
-        async function registerUser() {
-            const emailField = document.getElementById('email');
-            const passwordField = document.getElementById('password');
-            const email = emailField ? emailField.value.trim() : '';
-            const password = passwordField ? passwordField.value : '';
-
-            if (!email || !password) {
-                alert('Bitte fülle alle Felder für die Registrierung aus.');
-                return;
-            }
-
-            const { error } = await supabaseClient.auth.signUp({ email, password });
-            if (error) alert('Registrierung fehlgeschlagen: ' + error.message);
-            else alert('Registrierung erfolgreich! Du kannst dich jetzt einloggen.');
-        }
+        protectPage();
 
         async function logoutUser() {
             try {
@@ -524,22 +412,9 @@
             } catch (err) {
                 console.error('Fehler beim Logout:', err);
             } finally {
-                // Lokale Speicher komplett leeren, damit die Session beim Reload garantiert weg ist
                 localStorage.clear();
                 sessionStorage.clear();
-                window.location.replace('index.html');
-            }
-        }
-        
-        function showWebsite() {
-            const loginScreen = document.getElementById('login-screen');
-            const mainWebsite = document.getElementById('main-website');
-            if (loginScreen && mainWebsite) {
-                loginScreen.style.opacity = '0';
-                setTimeout(() => {
-                    loginScreen.style.display = 'none';
-                    mainWebsite.classList.add('visible');
-                }, 400);
+                window.location.replace('login.html');
             }
         }
     </script>
