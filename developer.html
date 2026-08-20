@@ -184,6 +184,8 @@
             if (error || !profile || profile.role !== 'developer') {
                 logToConsole('[FEHLER] Zugriff verweigert (Keine Entwickler-Rechte).');
                 document.getElementById('code-editor').value = '<!-- Zugriff verweigert! Nur für Entwickler. -->';
+                // Automatischer Schutz: Umleitung bei fehlenden Rechten
+                setTimeout(() => { window.location.href = 'index.html'; }, 3000);
             } else {
                 loadCodeFile();
             }
@@ -192,12 +194,17 @@
         function logToConsole(message) {
             const consoleBox = document.getElementById('console-output');
             const time = new Date().toLocaleTimeString();
-            consoleBox.innerHTML += `<br>[${time}] ${message}`;
+            const safeMsg = document.createElement('div');
+            safeMsg.textContent = `[${time}] ${message}`;
+            consoleBox.appendChild(safeMsg);
             consoleBox.scrollTop = consoleBox.scrollHeight;
         }
 
         async function loadCodeFile() {
             const fileName = document.getElementById('file-select').value;
+            // Validierung gegen Pfad-Traversal
+            if (!['index.html', 'admin.html', 'developer.html'].includes(fileName)) return;
+            
             logToConsole(`Lade Datei: ${fileName}...`);
             
             try {
