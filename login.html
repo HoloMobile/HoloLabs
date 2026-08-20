@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HoloLabs | Login</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root {
+            --primary: #007bff;
+            --secondary: #00d2ff;
+            --bg: #030712;
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+        }
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        .ambient-glow {
+            position: fixed;
+            width: 500px;
+            height: 500px;
+            background: linear-gradient(135deg, rgba(0,123,255,0.15), rgba(0,210,255,0.15));
+            filter: blur(120px);
+            border-radius: 50%;
+            z-index: -1;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+        }
+        .login-card {
+            background: rgba(15, 23, 42, 0.7);
+            padding: 45px;
+            border-radius: 24px;
+            border: 1px solid rgba(255,255,255,0.08);
+            backdrop-filter: blur(25px);
+            text-align: center;
+            width: 380px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+        }
+        .login-card h2 {
+            font-size: 1.8rem;
+            margin-bottom: 25px;
+            font-weight: 700;
+        }
+        .login-input {
+            width: 100%;
+            padding: 14px 16px;
+            margin: 10px 0 15px 0;
+            background: rgba(0,0,0,0.4);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            color: white;
+            font-size: 1rem;
+            outline: none;
+            transition: 0.3s;
+        }
+        .login-input:focus {
+            border-color: var(--secondary);
+            box-shadow: 0 0 15px rgba(0,210,255,0.2);
+        }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 12px 30px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(0, 123, 255, 0.3);
+        }
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(0, 210, 255, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <div class="ambient-glow"></div>
+    
+    <div class="login-card">
+        <h2>HoloLabs <span style="color:var(--secondary)">Zugang</span></h2>
+        <input type="email" id="email" class="login-input" placeholder="E-Mail-Adresse eingeben">
+        <input type="password" id="password" class="login-input" placeholder="Passwort eingeben">
+        <div style="display: flex; gap: 10px; margin-top: 10px;">
+            <button class="btn" style="width: 50%; padding: 10px; font-size: 0.9rem;" onclick="loginUser()">Einloggen</button>
+            <button class="btn" style="width: 50%; padding: 10px; font-size: 0.9rem; background: rgba(255,255,255,0.1);" onclick="registerUser()">Registrieren</button>
+        </div>
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'https://jhwlyuiughhvtopxplqe.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_Y6jlvYWTamP40tID3SUV-A_pUyc2qLv'; 
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // Prüfen, ob der Nutzer bereits eingeloggt ist -> direkt zur index.html weiterleiten
+        async function checkExistingSession() {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (session && session.user) {
+                window.location.replace('index.html');
+            }
+        }
+        checkExistingSession();
+
+        async function loginUser() {
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            
+            if (!email || !password) {
+                alert('Bitte fülle alle Felder aus.');
+                return;
+            }
+
+            const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+            
+            if (error) {
+                alert('Login fehlgeschlagen: ' + error.message);
+                return;
+            }
+
+            if (data.user) {
+                // Prüfen ob gesperrt
+                const { data: profile } = await supabaseClient
+                    .from('profiles')
+                    .select('banned')
+                    .eq('id', data.user.id)
+                    .single();
+
+                if (profile && profile.banned === true) {
+                    alert('Dein Account wurde gesperrt.');
+                    await supabaseClient.auth.signOut();
+                    return;
+                }
+
+                // Erfolgreich -> Weiter zur Hauptseite
+                window.location.replace('index.html');
+            }
+        }
+        
+        async function registerUser() {
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+
+            if (!email || !password) {
+                alert('Bitte fülle alle Felder für die Registrierung aus.');
+                return;
+            }
+
+            const { error } = await supabaseClient.auth.signUp({ email, password });
+            if (error) {
+                alert('Registrierung fehlgeschlagen: ' + error.message);
+            } else {
+                alert('Registrierung erfolgreich! Du kannst dich jetzt einloggen.');
+            }
+        }
+    </script>
+</body>
+</html>
