@@ -436,7 +436,6 @@
         const bypassRedirect = urlParams.get('bypass') === 'true';
 
         async function checkRoleAndPermissions(userId) {
-            // Zeige immer die Startseite an
             showWebsite();
 
             if (bypassRedirect) return;
@@ -447,7 +446,6 @@
                 .eq('id', userId)
                 .single();
             
-            // Schutz: Prüfen ob Nutzer gesperrt ist und Session sofort beenden
             if (profile && profile.banned === true) {
                 alert('Dein Account wurde gesperrt.');
                 await supabaseClient.auth.signOut();
@@ -456,7 +454,6 @@
             }
 
             if (!profileError && profile) {
-                // Passenden Panel-Button sicher einblenden je nach Rolle
                 if (profile.role === 'admin') {
                     document.getElementById('admin-btn').style.display = 'inline-flex';
                 } else if (profile.role === 'developer') {
@@ -471,7 +468,6 @@
                 if (session && session.user) {
                     await checkRoleAndPermissions(session.user.id);
                 } else {
-                    // Keine aktive Session -> Login-Ansicht bleibt für den Nutzer sichtbar
                     showWebsite();
                 }
             } catch (err) {
@@ -483,7 +479,6 @@
         checkInitialSession();
         
         async function loginUser() {
-            // Validierung gegen leere Eingaben
             const emailField = document.getElementById('email');
             const passwordField = document.getElementById('password');
             const email = emailField ? emailField.value.trim() : '';
@@ -524,12 +519,23 @@
         }
 
         async function logoutUser() {
-            const { error } = await supabaseClient.auth.signOut();
-            if (error) {
-                alert('Fehler beim Ausloggen: ' + error.message);
-                return;
+            try {
+                const { error } = await supabaseClient.auth.signOut();
+                if (error) {
+                    console.error('Fehler beim Logout:', error.message);
+                }
+            } catch (err) {
+                console.error('Unerwarteter Fehler beim Logout:', err);
+            } finally {
+                // Lokale Supabase-Tokens aus dem Storage entfernen, damit der Login-Screen sicher triggert
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    if (key && key.includes('supabase')) {
+                        localStorage.removeItem(key);
+                    }
+                }
+                window.location.href = 'index.html';
             }
-            window.location.href = 'index.html';
         }
         
         function showWebsite() {
