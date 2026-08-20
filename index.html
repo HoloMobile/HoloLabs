@@ -447,7 +447,7 @@
                 .eq('id', userId)
                 .single();
             
-            // Prüfen ob Nutzer gesperrt ist
+            // Schutz: Prüfen ob Nutzer gesperrt ist und Session sofort beenden
             if (profile && profile.banned === true) {
                 alert('Dein Account wurde gesperrt.');
                 await supabaseClient.auth.signOut();
@@ -456,7 +456,7 @@
             }
 
             if (!profileError && profile) {
-                // Passenden Panel-Button einblenden je nach Rolle
+                // Passenden Panel-Button sicher einblenden je nach Rolle
                 if (profile.role === 'admin') {
                     document.getElementById('admin-btn').style.display = 'inline-flex';
                 } else if (profile.role === 'developer') {
@@ -466,20 +466,34 @@
         }
 
         async function checkInitialSession() {
-            const { data: { session } } = await supabaseClient.auth.getSession();
-            if (session) {
-                await checkRoleAndPermissions(session.user.id);
-            } else {
-                // Keine Session -> Website trotzdem anzeigen, damit Login-Screen zu sehen ist
+            try {
+                const { data: { session } } = await supabaseClient.auth.getSession();
+                if (session && session.user) {
+                    await checkRoleAndPermissions(session.user.id);
+                } else {
+                    // Keine aktive Session -> Login-Ansicht bleibt für den Nutzer sichtbar
+                    showWebsite();
+                }
+            } catch (err) {
+                console.error('Session-Prüfung fehlgeschlagen:', err);
+                showWebsite();
             }
         }
 
         checkInitialSession();
         
         async function loginUser() {
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
+            // Validierung gegen leere Eingaben
+            const emailField = document.getElementById('email');
+            const passwordField = document.getElementById('password');
+            const email = emailField ? emailField.value.trim() : '';
+            const password = passwordField ? passwordField.value : '';
             
+            if (!email || !password) {
+                alert('Bitte fülle alle Felder aus.');
+                return;
+            }
+
             const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
             
             if (error) {
@@ -494,8 +508,16 @@
         }
         
         async function registerUser() {
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
+            const emailField = document.getElementById('email');
+            const passwordField = document.getElementById('password');
+            const email = emailField ? emailField.value.trim() : '';
+            const password = passwordField ? passwordField.value : '';
+
+            if (!email || !password) {
+                alert('Bitte fülle alle Felder für die Registrierung aus.');
+                return;
+            }
+
             const { error } = await supabaseClient.auth.signUp({ email, password });
             if (error) alert('Registrierung fehlgeschlagen: ' + error.message);
             else alert('Registrierung erfolgreich! Du kannst dich jetzt einloggen.');
@@ -513,11 +535,13 @@
         function showWebsite() {
             const loginScreen = document.getElementById('login-screen');
             const mainWebsite = document.getElementById('main-website');
-            loginScreen.style.opacity = '0';
-            setTimeout(() => {
-                loginScreen.style.display = 'none';
-                mainWebsite.classList.add('visible');
-            }, 400);
+            if (loginScreen && mainWebsite) {
+                loginScreen.style.opacity = '0';
+                setTimeout(() => {
+                    loginScreen.style.display = 'none';
+                    mainWebsite.classList.add('visible');
+                }, 400);
+            }
         }
     </script>
 </body>
