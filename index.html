@@ -510,17 +510,19 @@
             },
             support: {
                 q: "📞 Wie erreiche ich den echten Support?",
-                a: "Du kannst uns jederzeit über unseren Discord-Server, per E-Mail oder Telefonisch erreichen. Wir helfen dir bei Problemen schnell weiter!"
-            },
-            bewerbung: {
-                q: "📋 Kann ich mich Bewerben?"
-                a: "Du kannst dich als Programmierer oder Designer auf unserem Discord-Server Bewerben."
+                a: "Du kannst uns jederzeit über unseren Discord-Server per E-Mail oder Telefonisch erreichen. Wir helfen dir bei Problemen schnell weiter!"
+            bewerben: {
+                q: "📋 Kann ich mich bei euch Bewerben?",
+                a: "Ja du kannst dich auf unseren Discord-Server als Developer oder Designer Bewerben."
             }
         };
 
         function toggleChat() {
             const windowBox = document.getElementById('bot-window');
-            if (windowBox.style.display === 'none' || windowBox.style.display === '') {
+            // Prüfen, ob das Fenster aktuell versteckt ist oder angezeigt wird
+            const currentDisplay = window.getComputedStyle(windowBox).display;
+            
+            if (currentDisplay === 'none') {
                 windowBox.style.display = 'flex';
             } else {
                 windowBox.style.display = 'none';
