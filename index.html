@@ -433,6 +433,7 @@
                 <button class="faq-btn" onclick="askQuestion('discord')">🔗 Wie bekomme ich Zugang über Discord?</button>
                 <button class="faq-btn" onclick="askQuestion('safe')">🔒 Sind meine Daten sicher?</button>
                 <button class="faq-btn" onclick="askQuestion('support')">📞 Wie erreiche ich den echten Support?</button>
+                <button class="faq-btn" onclick="askQuestion('bewerben')">📋 Kann ich mich bei euch bewerben?</button>
             </div>
         </div>
     </div>
@@ -511,18 +512,21 @@
             support: {
                 q: "📞 Wie erreiche ich den echten Support?",
                 a: "Du kannst uns jederzeit über unseren Discord-Server per E-Mail oder Telefonisch erreichen. Wir helfen dir bei Problemen schnell weiter!"
+            },
             bewerben: {
-                q: "📋 Kann ich mich bei euch Bewerben?",
-                a: "Ja du kannst dich auf unseren Discord-Server als Developer oder Designer Bewerben."
+                q: "📋 Kann ich mich bei euch bewerben?",
+                a: "Ja, du kannst dich auf unserem Discord-Server als Developer oder Designer bewerben[cite: 2]."
             }
         };
 
         function toggleChat() {
             const windowBox = document.getElementById('bot-window');
-            // Prüfen, ob das Fenster aktuell versteckt ist oder angezeigt wird
-            const currentDisplay = window.getComputedStyle(windowBox).display;
+            console.log("Chat-Button geklickt");
             
-            if (currentDisplay === 'none') {
+            if (!windowBox) return;
+
+            // Direkt über style.display umschalten
+            if (windowBox.style.display === 'none' || windowBox.style.display === '') {
                 windowBox.style.display = 'flex';
             } else {
                 windowBox.style.display = 'none';
