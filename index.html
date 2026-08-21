@@ -271,6 +271,46 @@
             font-size: 0.9rem;
             border-top: 1px solid rgba(255,255,255,0.03);
         }
+        
+        /* Support Bot Widget Styles */
+        .faq-btn {
+            background: rgba(0, 123, 255, 0.15);
+            color: var(--secondary);
+            border: 1px solid rgba(0, 210, 255, 0.2);
+            padding: 8px 12px;
+            border-radius: 8px;
+            text-align: left;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .faq-btn:hover {
+            background: rgba(0, 123, 255, 0.3);
+            border-color: var(--secondary);
+        }
+        .bot-msg {
+            background: rgba(0, 123, 255, 0.2);
+            color: white;
+            padding: 10px 14px;
+            border-radius: 12px;
+            max-width: 85%;
+            align-self: flex-end;
+            animation: fadeIn 0.3s ease;
+        }
+        .user-msg {
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--text);
+            padding: 10px 14px;
+            border-radius: 12px;
+            max-width: 85%;
+            align-self: flex-start;
+            animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
         @media (max-width: 768px) {
             .hero h1 { font-size: 3rem; }
             .rules h2 { font-size: 2.2rem; }
@@ -361,6 +401,42 @@
         </p>
     </footer>
 
+    <!-- === SUPPORT BOT WIDGET === -->
+    <div id="support-widget" style="position: fixed; bottom: 30px; right: 30px; z-index: 9999; font-family: 'Inter', sans-serif;">
+        <!-- Chat-Button -->
+        <button id="bot-toggle-btn" onclick="toggleChat()" style="background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; border: none; width: 60px; height: 60px; border-radius: 50%; cursor: pointer; box-shadow: 0 4px 20px rgba(0,210,255,0.4); display: flex; align-items: center; justify-content: center; font-size: 24px; transition: transform 0.3s;">
+            💬
+        </button>
+
+        <!-- Chat-Fenster -->
+        <div id="bot-window" style="display: none; position: absolute; bottom: 80px; right: 0; width: 350px; background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; backdrop-filter: blur(20px); box-shadow: 0 20px 40px rgba(0,0,0,0.6); overflow: hidden; flex-direction: column;">
+            
+            <!-- Header -->
+            <div style="background: rgba(30, 41, 59, 0.8); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span style="width: 10px; height: 10px; background: #22c55e; border-radius: 50%; display: inline-block;"></span>
+                    <span style="font-weight: 600; color: white; font-size: 0.95rem;">HoloSupport Bot</span>
+                </div>
+                <button onclick="toggleChat()" style="background: none; border: none; color: var(--text-muted); font-size: 1.2rem; cursor: pointer;">&times;</button>
+            </div>
+
+            <!-- Nachrichten-Verlauf -->
+            <div id="bot-messages" style="padding: 15px; height: 280px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; font-size: 0.9rem;">
+                <div style="background: rgba(255,255,255,0.05); padding: 10px 14px; border-radius: 12px; max-width: 85%; color: var(--text);">
+                    Hi! 👋 Ich bin dein HoloSupport-Assistent. Wähle unten eine Frage aus, um mehr zu erfahren:
+                </div>
+            </div>
+
+            <!-- Fragen-Auswahl (Buttons) -->
+            <div style="padding: 12px; background: rgba(3, 7, 18, 0.5); border-top: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; gap: 6px; max-height: 160px; overflow-y: auto;">
+                <button class="faq-btn" onclick="askQuestion('price')">💰 Wieviel kostet HoloMobile?</button>
+                <button class="faq-btn" onclick="askQuestion('discord')">🔗 Wie bekomme ich Zugang über Discord?</button>
+                <button class="faq-btn" onclick="askQuestion('safe')">🔒 Sind meine Daten sicher?</button>
+                <button class="faq-btn" onclick="askQuestion('support')">📞 Wie erreiche ich den echten Support?</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         const SUPABASE_URL = 'https://jhwlyuiughhvtopxplqe.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_Y6jlvYWTamP40tID3SUV-A_pUyc2qLv'; 
@@ -416,6 +492,61 @@
                 sessionStorage.clear();
                 window.location.replace('login.html');
             }
+        }
+
+        // Support Bot Logik
+        const qaDatabase = {
+            price: {
+                q: "💰 Wieviel kostet HoloMobile?",
+                a: "HoloMobile kostet einmalig günstige **5€** für lebenslangen Zugriff auf alle Premium-Features. Es gibt keine monatlichen Abo-Kosten!"
+            },
+            discord: {
+                q: "🔗 Wie bekomme ich Zugang über Discord?",
+                a: "Tritt einfach unserem offiziellen Discord-Server bei (über den Button oben auf der Seite). Dort findest du alle Anleitungen zur Freischaltung deines Zugangs."
+            },
+            safe: {
+                q: "🔒 Sind meine Daten sicher?",
+                a: "Absolut! Alles, was du mit Holo schreibst, bleibt streng unter dir und Holo. Die Entwickler speichern und sehen keinerlei private Chats oder Daten von dir."
+            },
+            support: {
+                q: "📞 Wie erreiche ich den echten Support?",
+                a: "Du kannst uns jederzeit über unseren Discord-Server, per E-Mail oder Telefonisch erreichen. Wir helfen dir bei Problemen schnell weiter!"
+            },
+            bewerbung: {
+                q: "📋 Kann ich mich Bewerben?"
+                a: "Du kannst dich als Programmierer oder Designer auf unserem Discord-Server Bewerben."
+            }
+        };
+
+        function toggleChat() {
+            const windowBox = document.getElementById('bot-window');
+            if (windowBox.style.display === 'none' || windowBox.style.display === '') {
+                windowBox.style.display = 'flex';
+            } else {
+                windowBox.style.display = 'none';
+            }
+        }
+
+        function askQuestion(key) {
+            const item = qaDatabase[key];
+            if (!item) return;
+
+            const container = document.getElementById('bot-messages');
+
+            const userDiv = document.createElement('div');
+            userDiv.className = 'user-msg';
+            userDiv.innerHTML = item.q;
+            container.appendChild(userDiv);
+
+            setTimeout(() => {
+                const botDiv = document.createElement('div');
+                botDiv.className = 'bot-msg';
+                botDiv.innerHTML = item.a;
+                container.appendChild(botDiv);
+                container.scrollTop = container.scrollHeight;
+            }, 300);
+
+            container.scrollTop = container.scrollHeight;
         }
     </script>
 </body>
