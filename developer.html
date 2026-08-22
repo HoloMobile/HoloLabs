@@ -206,7 +206,7 @@
         async function loadCodeFile() {
             const fileName = document.getElementById('file-select').value;
             // Validierung gegen Pfad-Traversal
-            if (!['index.html', 'admin.html', 'developer.html'].includes(fileName)) return;
+            if (!['index.html', 'admin.html', 'developer.html', 'login.html', 'impressum.html', 'datenschutz.html'].includes(fileName)) return;
             
             logToConsole(`Lade Datei: ${fileName}...`);
             
