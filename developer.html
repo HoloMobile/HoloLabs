@@ -153,6 +153,9 @@
                 <option value="index.html">index.html</option>
                 <option value="admin.html">admin.html</option>
                 <option value="developer.html">developer.html</option>
+                <option value="login.html">login.html</option>
+                <option value="datenschutz.html">datenschutz.html</option>
+                <option value="impressum.html">impressum.html</option>
             </select>
 
             <textarea id="code-editor" placeholder="Lade Quelltext..."></textarea>
@@ -171,7 +174,7 @@
             
             if (!session) {
                 logToConsole('[FEHLER] Nicht eingeloggt.');
-                document.getElementById('code-editor').value = '<!-- Zugriff verweigert: Nicht eingeloggt. Bitte logge dich über die Startseite ein. -->';
+                document.getElementById('code-editor').value = '<!-- Zugriff verweigert: Nicht eingeloggt. Bitte logge dich über die Loginseite ein. -->';
                 return;
             }
 
